@@ -152,28 +152,24 @@ define postgres::user(
           default => "psql ${connection} -c \"CREATE USER \\\"$name\\\" PASSWORD '$password'\" ",
         },
         user    => "postgres",
-        unless  => "psql ${connection} -c '\\du' | egrep '^  *$name '",
         require => [User["postgres"], Package["postgresql"]],
       }
 
       exec { "Set SUPERUSER attribute for postgres user $name":
         command => "psql ${connection} -c 'ALTER USER \"$name\" $superusertext' ",
         user    => "postgres",
-        unless  => "psql ${connection} -tc \"SELECT rolsuper FROM pg_roles WHERE rolname = '$name'\" |grep -q $(echo $superuser |cut -c 1)",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
       exec { "Set CREATEDB attribute for postgres user $name":
         command => "psql ${connection} -c 'ALTER USER \"$name\" $createdbtext' ",
         user    => "postgres",
-        unless  => "psql ${connection} -tc \"SELECT rolcreatedb FROM pg_roles WHERE rolname = '$name'\" |grep -q $(echo $createdb |cut -c 1)",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
       exec { "Set CREATEROLE attribute for postgres user $name":
         command => "psql ${connection} -c 'ALTER USER \"$name\" $createroletext' ",
         user    => "postgres",
-        unless  => "psql ${connection} -tc \"SELECT rolcreaterole FROM pg_roles WHERE rolname = '$name'\" |grep -q $(echo $createrole |cut -c 1)",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
