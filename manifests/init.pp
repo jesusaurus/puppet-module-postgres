@@ -60,7 +60,7 @@ define postgres::database(
       exec { "Create $name postgres db":
         command => "/usr/bin/createdb $ownerstring $encodingstring $name -T $template",
         user    => "postgres",
-        unless  => "/usr/bin/test \$($psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
+        unless  => "/usr/bin/psql -tA -c 'select datname from pg_database' | grep -q $name",
         require => Package["postgresql"],
       }
     }
@@ -68,7 +68,7 @@ define postgres::database(
       exec { "Remove $name postgres db":
         command => "/usr/bin/dropdb $name",
         user    => "postgres",
-        onlyif  => "/usr/bin/test \$($psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
+        onlyif  => "/usr/bin/psql -tA -c 'select datname from pg_database' | grep -q $name",
         require => Package["postgresql"],
       }
     }
