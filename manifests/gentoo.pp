@@ -1,9 +1,7 @@
 class postgres::gentoo {
 
-  include gentoo
-
   package {
-    "dev-db/postgresql-server":
+    'dev-db/postgresql-server':
       ensure    => present,
       name      => 'postgresql-server',
       category  => 'dev-db',

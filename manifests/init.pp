@@ -152,7 +152,10 @@ define postgres::user(
           default => "psql ${connection} -c \"CREATE USER \\\"$name\\\" PASSWORD '$password'\" ",
         },
         user    => "postgres",
-        require => [User["postgres"], Package["postgresql"]],
+        require => [
+          User["postgres"],
+          Package["postgresql"],
+        ],
       }
 
       exec { "Set SUPERUSER attribute for postgres user $name":
