@@ -37,7 +37,7 @@ class postgres (
 Create a new PostgreSQL database
 
 */
-define postgresql::database(
+define postgres::database(
   $ensure=present,
   $owner=false,
   $encoding=false,
@@ -108,7 +108,7 @@ define postgresql::database(
 Create a new PostgreSQL user
 
 */
-define postgresql::user(
+define postgres::user(
   $ensure=present,
   $password=false,
   $superuser=false,
