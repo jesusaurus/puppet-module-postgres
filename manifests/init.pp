@@ -60,7 +60,7 @@ define postgres::database(
       exec { "Create $name postgres db":
         command => "/usr/bin/createdb $ownerstring $encodingstring $name -T $template",
         user    => "postgres",
-        unless  => "test \$(psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
+        unless  => "/usr/bin/test \$($psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
         require => Package["postgresql"],
       }
     }
@@ -68,7 +68,7 @@ define postgres::database(
       exec { "Remove $name postgres db":
         command => "/usr/bin/dropdb $name",
         user    => "postgres",
-        onlyif  => "test \$(psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
+        onlyif  => "/usr/bin/test \$($psql -tA -c \"SELECT count(*)=1 FROM pg_catalog.pg_database where datname='${name}';\") = t",
         require => Package["postgresql"],
       }
     }
@@ -114,6 +114,7 @@ define postgres::user(
   $superuser=false,
   $createdb=false,
   $createrole=false,
+  $psql='/usr/bin/psql',
   $hostname='/var/run/postgresql',
   $port='5432',
   $user='postgres') {
@@ -148,8 +149,8 @@ define postgres::user(
       # User with '-' like www-data must be inside double quotes
       exec { "Create postgres user $name":
         command => $password ? {
-          false => "psql ${connection} -c \"CREATE USER \\\"$name\\\" \" ",
-          default => "psql ${connection} -c \"CREATE USER \\\"$name\\\" PASSWORD '$password'\" ",
+          false => "$psql ${connection} -c \"CREATE USER \\\"$name\\\" \" ",
+          default => "$psql ${connection} -c \"CREATE USER \\\"$name\\\" PASSWORD '$password'\" ",
         },
         user    => "postgres",
         require => [
@@ -159,19 +160,19 @@ define postgres::user(
       }
 
       exec { "Set SUPERUSER attribute for postgres user $name":
-        command => "psql ${connection} -c 'ALTER USER \"$name\" $superusertext' ",
+        command => "$psql ${connection} -c 'ALTER USER \"$name\" $superusertext' ",
         user    => "postgres",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
       exec { "Set CREATEDB attribute for postgres user $name":
-        command => "psql ${connection} -c 'ALTER USER \"$name\" $createdbtext' ",
+        command => "$psql ${connection} -c 'ALTER USER \"$name\" $createdbtext' ",
         user    => "postgres",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
 
       exec { "Set CREATEROLE attribute for postgres user $name":
-        command => "psql ${connection} -c 'ALTER USER \"$name\" $createroletext' ",
+        command => "$psql ${connection} -c 'ALTER USER \"$name\" $createroletext' ",
         user    => "postgres",
         require => [User["postgres"], Exec["Create postgres user $name"]],
       }
@@ -184,9 +185,9 @@ define postgres::user(
 
         # change only if it's not the same password
         exec { "Change password for postgres user $name":
-          command => "psql ${connection} -c \"ALTER USER \\\"$name\\\" PASSWORD '$password' \"",
+          command => "$psql ${connection} -c \"ALTER USER \\\"$name\\\" PASSWORD '$password' \"",
           user    => "postgres",
-          unless  => "test $(TMPFILE=$(mktemp /tmp/.pgpass.XXXXXX) && echo '${host}:${port}:template1:${name}:${pgpass}' > \$TMPFILE && PGPASSFILE=\$TMPFILE psql -h ${host} -p ${port} -U ${name} -c '\\q' template1 && rm -f \$TMPFILE)",
+          unless  => "/usr/bin/test $(TMPFILE=$(/usr/bin/mktemp /tmp/.pgpass.XXXXXX) && /usr/echo '${host}:${port}:template1:${name}:${pgpass}' > \$TMPFILE && PGPASSFILE=\$TMPFILE $psql -h ${host} -p ${port} -U ${name} -c '\\q' template1 && /usr/rm -f \$TMPFILE)",
           require => [User["postgres"], Exec["Create postgres user $name"]],
         }
       }
@@ -195,9 +196,9 @@ define postgres::user(
 
     absent:  {
       exec { "Remove postgres user $name":
-        command => "psql ${connection} -c 'DROP USER \"$name\" ' ",
+        command => "$psql ${connection} -c 'DROP USER \"$name\" ' ",
         user    => "postgres",
-        onlyif  => "psql ${connection} -c '\\du' | grep '$name  *|'",
+        onlyif  => "$psql ${connection} -c '\\du' | grep '$name  *|'",
         require => Package["postgresql"],
       }
     }

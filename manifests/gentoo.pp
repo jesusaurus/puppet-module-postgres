@@ -10,7 +10,7 @@ class postgres::gentoo {
 
   exec {
     "config-postsgresql-server":
-      command => "emerge --config dev-db/postgresql",
+      command => "/usr/bin/emerge --config dev-db/postgresql",
       require => Package['dev-db/postgresql-server'],
   }
 
