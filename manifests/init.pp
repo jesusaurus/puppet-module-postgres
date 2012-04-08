@@ -153,7 +153,6 @@ define postgres::user(
           default => "$psql ${connection} -c \"CREATE USER \\\"$name\\\" PASSWORD '$password'\" ",
         },
         user    => "postgres",
-        unless  => "$psql ${connection} -c '\\du' | egrep '^  *$name '",
         require => [
           User["postgres"],
           Package["postgresql"],
