@@ -13,11 +13,11 @@ class postgres (
   }
 
   case $operatingsystem {
-    ubuntu: {
+    'Ubuntu': {
       include postgres::ubuntu
     }
 
-    gentoo: {
+    'Gentoo': {
       include postgres::gentoo
     }
 

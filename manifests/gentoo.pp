@@ -4,8 +4,10 @@ class postgres::gentoo {
 
   package {
     "dev-db/postgresql-server":
-      ensure => present,
-      alias  => 'postgresql',
+      ensure    => present,
+      name      => 'postgresql-server',
+      category  => 'dev-db',
+      alias     => 'postgresql',
   }
 
   exec {
